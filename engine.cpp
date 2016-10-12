@@ -19,8 +19,14 @@ Cell::neighbours()
 }
 
 void
-Cell::revive(uint16_t g)
+Cell::step()
 {
+}
+
+void
+Cell::revive(uint32_t g)
+{
+    d_alive = true;
     d_genome = g;
 }
 
@@ -28,4 +34,10 @@ bool
 Cell::alive()
 {
     return d_alive;
+}
+
+uint32_t
+Cell::genome()
+{
+    return d_genome;
 }

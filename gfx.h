@@ -11,12 +11,13 @@ class GfxState {
     private:
         SDL_Window *d_window;
         SDL_Renderer *d_renderer;
-        int X = 480, Y = 480, M = 10,
-            DX = X / M, DY = Y / M;
+        int N, X = 480, Y = 480, DX = X / N, DY = Y / N;
 
     public:
-        GfxState();
+        GfxState(int n);
         void draw_rect(int i, int j, Uint8 r, Uint8 g, Uint8 b);
+        void prepare();
+        void present();
 
 };
 

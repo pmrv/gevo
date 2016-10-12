@@ -13,15 +13,17 @@ class Cell {
         vector<reference_wrapper<Cell>> d_neighbours;
         bool d_alive;
         unsigned int d_life;
-        uint16_t d_genome;
+        uint32_t d_genome;
 
     public:
         Cell();
 
-        void revive(uint16_t g);
+        void revive(uint32_t g);
 
         void neighbours(vector<reference_wrapper<Cell>> n);
         vector<reference_wrapper<Cell>> neighbours();
+
+        uint32_t genome();
 
         bool alive();
 
@@ -29,7 +31,7 @@ class Cell {
 
 };
 
-typedef void (*ForEachCell)(Cell);
+typedef void (*ForEachCell)(int, int, Cell&, void *);
 
 template<int N>
 class CellGrid {
@@ -38,7 +40,7 @@ class CellGrid {
 
     public:
         CellGrid();
-        void foreach(ForEachCell f);
+        void foreach(ForEachCell f, void *user_data);
 
 };
 
@@ -59,12 +61,12 @@ CellGrid<N>::CellGrid()
 
 template<int N>
 void
-CellGrid<N>::foreach(ForEachCell f)
+CellGrid<N>::foreach(ForEachCell f, void *user_data)
 {
     // TODO: this introduces bias in favor of the top left cells
-    for (auto r : d_cells) {
-        for (auto c : r) {
-            f(c);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            f(i, j, d_cells[i][j], user_data);
         }
     }
 }
