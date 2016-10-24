@@ -1,6 +1,10 @@
 #ifndef GFX_H
 #define GFX_H
 
+#include "dbg.h"
+
+#include <iostream>
+
 using namespace std;
 
 #include "SDL.h"
@@ -9,8 +13,8 @@ using namespace std;
 
 class GfxState {
     private:
-        SDL_Window *d_window;
-        SDL_Renderer *d_renderer;
+        SDL_Window *d_window = NULL;
+        SDL_Renderer *d_renderer = NULL;
         int N, X = 480, Y = 480, DX = X / N, DY = Y / N;
 
     public:

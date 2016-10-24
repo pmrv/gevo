@@ -1,7 +1,7 @@
 #include "engine.h"
 #include "gfx.h"
 
-#include <SDL_timer.h>
+#include <iostream>
 
 using namespace std;
 
@@ -14,7 +14,8 @@ struct GfxGame {
 int
 main(int argc, char **argv)
 {
-    GfxGame<10> game;
+    const int M = 40;
+    GfxGame<M> game = GfxGame<M>();
 
     bool running = true;
     SDL_Event event;
@@ -26,10 +27,9 @@ main(int argc, char **argv)
     }
 
     game.grid.foreach(
-            [](int i, int j, Cell &c, void *user_data) -> void {
-                vector<uint32_t> clades = *static_cast<vector<uint32_t> *>(user_data);
-                c.revive(clades[(i + j) % 10]);
-            }, &clades);
+            [&clades](int i, int j, Cell &c) -> void {
+                if ((i + j) % 3 == 0) c.revive(clades[(i + j) % 10]);
+    });
 
     while (running) {
         while(SDL_PollEvent(&event)) {
@@ -41,17 +41,17 @@ main(int argc, char **argv)
         }
 
         game.gfx.prepare();
+        game.gfx.draw_rect(10, 10, 0xff, 0xff, 0x00);
         game.grid.foreach(
-                [](int i, int j, Cell &c, void *user_data) -> void {
-                    c.step();
-                    GfxState gfx = *static_cast<GfxState *>(user_data);
+                [&game](int i, int j, Cell &c) -> void {
                     if (c.alive()) {
+                        c.step();
                         uint32_t g = c.genome();
-                        gfx.draw_rect(i, j, (g >> 16) & 0xff,
-                                            (g >>  8) & 0xff,
-                                             g        & 0xff);
+                        game.gfx.draw_rect(i, j, (g >> 16) & 0xff,
+                                                 (g >>  8) & 0xff,
+                                                  g        & 0xff);
                     }
-                }, &game.gfx);
+                });
         game.gfx.present();
 
         SDL_Delay(ticks);

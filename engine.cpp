@@ -2,8 +2,11 @@
 
 Cell::Cell()
 {
-    d_alive = false;
-    d_life = 0;
+}
+
+Cell::Cell(uint32_t g) : Cell()
+{
+    revive(g);
 }
 
 void
@@ -21,6 +24,14 @@ Cell::neighbours()
 void
 Cell::step()
 {
+    if (rand() < horny * RAND_MAX) {
+        for (Cell &n : d_neighbours) {
+            if (n.alive()) continue;
+
+            n.revive(d_genome);
+            break;
+        }
+    }
 }
 
 void
@@ -28,6 +39,7 @@ Cell::revive(uint32_t g)
 {
     d_alive = true;
     d_genome = g;
+    horny = .25 + static_cast<float>(g & 0xf) / 32;
 }
 
 bool

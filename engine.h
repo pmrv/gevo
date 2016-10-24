@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include <iostream>
 #include <functional>
 #include <vector>
 
@@ -11,12 +12,13 @@ using namespace std;
 class Cell {
     private:
         vector<reference_wrapper<Cell>> d_neighbours;
-        bool d_alive;
-        unsigned int d_life;
-        uint32_t d_genome;
+        bool d_alive = false;
+        uint32_t d_genome = 0xffffffff;
+        float horny = 0;
 
     public:
         Cell();
+        Cell(uint32_t g);
 
         void revive(uint32_t g);
 
@@ -31,7 +33,8 @@ class Cell {
 
 };
 
-typedef void (*ForEachCell)(int, int, Cell&, void *);
+//typedef void (*ForEachCell)(int, int, Cell&, void *);
+typedef std::function<void(int, int, Cell&)> ForEachCell;
 
 template<int N>
 class CellGrid {
@@ -40,7 +43,7 @@ class CellGrid {
 
     public:
         CellGrid();
-        void foreach(ForEachCell f, void *user_data);
+        void foreach(ForEachCell f);
 
 };
 
@@ -61,12 +64,12 @@ CellGrid<N>::CellGrid()
 
 template<int N>
 void
-CellGrid<N>::foreach(ForEachCell f, void *user_data)
+CellGrid<N>::foreach(ForEachCell f)
 {
     // TODO: this introduces bias in favor of the top left cells
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            f(i, j, d_cells[i][j], user_data);
+            f(i, j, d_cells[i][j]);
         }
     }
 }
