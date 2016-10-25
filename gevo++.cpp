@@ -15,7 +15,7 @@ int
 main(int argc, char **argv)
 {
     const int M = 40;
-    GfxGame<M> game = GfxGame<M>();
+    GfxGame<M> *game = new GfxGame<M>();
 
     bool running = true;
     SDL_Event event;
@@ -26,7 +26,7 @@ main(int argc, char **argv)
         clades.push_back(static_cast<uint32_t>(rand()));
     }
 
-    game.grid.foreach(
+    game->grid.foreach(
             [&clades](int i, int j, Cell &c) -> void {
                 if ((i + j) % 3 == 0) c.revive(clades[(i + j) % 10]);
     });
@@ -40,19 +40,18 @@ main(int argc, char **argv)
             }
         }
 
-        game.gfx.prepare();
-        game.gfx.draw_rect(10, 10, 0xff, 0xff, 0x00);
-        game.grid.foreach(
+        game->gfx.prepare();
+        game->grid.foreach(
                 [&game](int i, int j, Cell &c) -> void {
                     if (c.alive()) {
                         c.step();
                         uint32_t g = c.genome();
-                        game.gfx.draw_rect(i, j, (g >> 16) & 0xff,
-                                                 (g >>  8) & 0xff,
-                                                  g        & 0xff);
+                        game->gfx.draw_rect(i, j, (g >> 16) & 0xff,
+                                                  (g >>  8) & 0xff,
+                                                   g        & 0xff);
                     }
                 });
-        game.gfx.present();
+        game->gfx.present();
 
         SDL_Delay(ticks);
     }
