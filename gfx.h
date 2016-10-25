@@ -19,7 +19,7 @@ class GfxState {
 
     public:
         GfxState(int n);
-        void draw_rect(int i, int j, Uint8 r, Uint8 g, Uint8 b);
+        void draw_rect(int i, int j, uint8_t r, uint8_t g, uint8_t b);
         void prepare();
         void present();
 

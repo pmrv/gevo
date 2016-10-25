@@ -14,7 +14,7 @@ error:
 }
 
 void
-GfxState::draw_rect(int i, int j, Uint8 r, Uint8 g, Uint8 b)
+GfxState::draw_rect(int i, int j, uint8_t r, uint8_t g, uint8_t b)
 {
     int e;
     SDL_Rect rect = {i * DX, j * DY, DX, DY};
