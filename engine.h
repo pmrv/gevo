@@ -14,23 +14,23 @@ class Cell {
         vector<reference_wrapper<Cell>> d_neighbours;
         bool d_alive = false;
         uint32_t d_genome = 0xffffffff;
-        float horny = 0;
+        uint8_t age = 0;
+        float horny = 0, aggro = 0;
 
     public:
         Cell();
         Cell(uint32_t g);
 
         void revive(uint32_t g);
+        void die();
+        void step();
+        void attacked(float a);
 
         void neighbours(vector<reference_wrapper<Cell>> n);
         vector<reference_wrapper<Cell>> neighbours();
 
         uint32_t genome();
-
         bool alive();
-
-        void step();
-
 };
 
 //typedef void (*ForEachCell)(int, int, Cell&, void *);
