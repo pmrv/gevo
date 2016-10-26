@@ -1,5 +1,17 @@
 #include "engine.h"
 
+uint8_t
+bitcount(uint32_t g)
+{
+    uint8_t c = 0;
+    while (g) {
+        g &= g - 1;
+        c += 1;
+    }
+
+    return c;
+}
+
 Cell::Cell()
 {
 }
@@ -30,26 +42,30 @@ Cell::die()
 void
 Cell::step()
 {
-    if (age <= 0) {
+    if (d_age <= 0) {
         die();
         return;
     } else {
-        age -= 1;
+        d_age -= 1;
     }
 
     if (rand() < horny * RAND_MAX) {
         for (Cell &n : d_neighbours) {
             if (n.alive()) continue;
 
-            n.revive(d_genome);
+            uint32_t g = d_genome;
+            if ((rand() & 0x1f) < mutate) {
+                g ^= rand() & 0xffffffff;
+            }
+            n.revive(g);
             break;
         }
     } else
-    if (rand() < horny * RAND_MAX) {
+    if (rand() < aggro * RAND_MAX) {
         for (Cell &n : d_neighbours) {
-            if (!n.alive() || d_genome == n.genome()) continue;
+            if (!n.alive()) continue;
 
-            n.attacked(aggro * age);
+            n.attacked(aggro * d_age);
             break;
         }
     }
@@ -60,17 +76,25 @@ Cell::revive(uint32_t g)
 {
     d_alive = true;
     d_genome = g;
-    age = ((g & 0xff00) >> 16) + static_cast<uint8_t>(8 * (rand() - 0.5));
-    if (age < 10) age += 10;
-    horny = static_cast<float>(g & 0x000f) / 32;
-    aggro = static_cast<float>(g & 0x00f0 >> 8) / 32;
+
+    d_age  =                    (g & 0x00001f) <<  3;
+    hunger =                   ((g & 0x0000e0) >>  5) + 2;
+    horny  = static_cast<float>((g & 0x000f00) >>  8) / 32;
+    aggro  = static_cast<float>((g & 0x00f000) >> 12) / 32;
+    mutate =                   ((g & 0x1f0000) >> 16);
+}
+
+bool
+Cell::like(Cell &c)
+{
+    return bitcount(~(d_genome ^ c.genome())) < mutate;
 }
 
 void
 Cell::attacked(float a)
 {
-    float o = age * aggro;
-    age -= o < a ? a : 0;
+    float o = d_age * aggro;
+    d_age -= o < a ? a : 0;
 }
 
 bool
@@ -83,4 +107,10 @@ uint32_t
 Cell::genome()
 {
     return d_genome;
+}
+
+uint8_t
+Cell::age()
+{
+    return d_age;
 }

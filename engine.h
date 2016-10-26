@@ -14,7 +14,7 @@ class Cell {
         vector<reference_wrapper<Cell>> d_neighbours;
         bool d_alive = false;
         uint32_t d_genome = 0xffffffff;
-        uint8_t age = 0;
+        uint8_t d_age = 0, hunger= 0, mutate;
         float horny = 0, aggro = 0;
 
     public:
@@ -24,6 +24,7 @@ class Cell {
         void revive(uint32_t g);
         void die();
         void step();
+        bool like(Cell &c);
         void attacked(float a);
 
         void neighbours(vector<reference_wrapper<Cell>> n);
@@ -31,6 +32,7 @@ class Cell {
 
         uint32_t genome();
         bool alive();
+        uint8_t age();
 };
 
 //typedef void (*ForEachCell)(int, int, Cell&, void *);
