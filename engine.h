@@ -6,6 +6,7 @@
 #include <iostream>
 #include <functional>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -16,10 +17,12 @@ class Cell {
         uint32_t d_genome = 0xffffffff;
         uint8_t d_age = 0, hunger= 0, mutate;
         float horny = 0, aggro = 0;
+        int d_x, d_y;
 
     public:
         Cell();
-        Cell(uint32_t g);
+        Cell(int x, int y);
+        Cell(int x, int y, uint32_t g);
 
         void revive(uint32_t g);
         void die();
@@ -33,15 +36,19 @@ class Cell {
         uint32_t genome();
         bool alive();
         uint8_t age();
+        int x();
+        void x(int xx);
+        int y();
+        void y(int yy);
 };
 
-//typedef void (*ForEachCell)(int, int, Cell&, void *);
-typedef std::function<void(int, int, Cell&)> ForEachCell;
+//typedef void (*ForEachCell)(Cell&, void *);
+typedef std::function<void(Cell&)> ForEachCell;
 
 template<int N>
 class CellGrid {
     private:
-        array<array<Cell, N>, N> d_cells;
+        vector<Cell> d_cells;
 
     public:
         CellGrid();
@@ -54,26 +61,39 @@ CellGrid<N>::CellGrid()
 {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            vector<reference_wrapper<Cell>> n;
-            n.push_back(ref(d_cells[(i - 1) % N][j]));
-            n.push_back(ref(d_cells[(i + 1) % N][j]));
-            n.push_back(ref(d_cells[i][(j - 1) % N]));
-            n.push_back(ref(d_cells[i][(j + 1) % N]));
-            d_cells[i][j].neighbours(n);
+            d_cells.push_back(Cell(i, j));
         }
     }
+
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+
+            int l = i - 1, r = i + 1, u = j - 1, d = j + 1;
+            if (l < 0) l += N;
+            if (u < 0) u += N;
+            if (r > N) r -= N;
+            if (d > N) d -= N;
+
+            vector<reference_wrapper<Cell>> n;
+            n.push_back(ref(d_cells[l + N * j]));
+            n.push_back(ref(d_cells[r + N * j]));
+            n.push_back(ref(d_cells[i + N * u]));
+            n.push_back(ref(d_cells[i + N * d]));
+            random_shuffle(n.begin(), n.end());
+            d_cells[i + N * j].neighbours(n);
+        }
+    }
+
+    // TODO: do that reguarly during steps
+    random_shuffle(d_cells.begin(), d_cells.end());
 }
 
 template<int N>
 void
 CellGrid<N>::foreach(ForEachCell f)
 {
-    // TODO: this introduces bias in favor of the top left cells
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            f(i, j, d_cells[i][j]);
-        }
-    }
+    for_each(d_cells.begin(), d_cells.end(), f);
 }
 
 #endif

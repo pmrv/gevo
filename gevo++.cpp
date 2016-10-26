@@ -35,8 +35,9 @@ main(int argc, char **argv)
     hashes.push_back([](Cell &c) -> uint32_t {return c.age();});
 
     game->grid.foreach(
-            [&clades](int i, int j, Cell &c) -> void {
-                if ((i + j) % 3 == 0) c.revive(clades[(i + j) % 10]);
+            [&clades](Cell &c) -> void {
+                int x = c.x(), y = c.y();
+                if ((x + y) % 3 == 0) c.revive(clades[(x + y) % 10]);
     });
 
     while (running) {
@@ -56,13 +57,13 @@ main(int argc, char **argv)
         hash = hashes[hash_index];
         game->gfx.prepare();
         game->grid.foreach(
-                [&game, &hash](int i, int j, Cell &c) -> void {
+                [&game, &hash](Cell &c) -> void {
                     if (c.alive()) {
                         c.step();
                         uint32_t g = hash(c);
-                        game->gfx.draw_rect(i, j, (g >> 16) & 0xff,
-                                                  (g >>  8) & 0xff,
-                                                   g        & 0xff);
+                        game->gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
+                                                          (g >>  8) & 0xff,
+                                                           g        & 0xff);
                     }
                 });
         game->gfx.present();

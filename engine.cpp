@@ -16,7 +16,11 @@ Cell::Cell()
 {
 }
 
-Cell::Cell(uint32_t g) : Cell()
+Cell::Cell(int x, int y) : d_x(x), d_y(y)
+{
+}
+
+Cell::Cell(int x, int y, uint32_t g) : Cell(x, y)
 {
     revive(g);
 }
@@ -113,4 +117,28 @@ uint8_t
 Cell::age()
 {
     return d_age;
+}
+
+int
+Cell::x()
+{
+    return d_x;
+}
+
+void
+Cell::x(int xx)
+{
+    d_x = xx;
+}
+
+int
+Cell::y()
+{
+    return d_y;
+}
+
+void
+Cell::y(int yy)
+{
+    d_y = yy;
 }
