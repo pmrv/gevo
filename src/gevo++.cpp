@@ -3,7 +3,9 @@
 #include "engine.h"
 #include "gfx.h"
 
+#include <fstream>
 #include <iostream>
+#include <unordered_map>
 
 using namespace std;
 
@@ -42,6 +44,7 @@ main(int argc, char **argv)
                 if ((x + y) % 3 == 0) c.revive(clades[(x + y) % 10]);
     });
 
+    unordered_map<uint32_t, int> clade_frequency;
     while (running) {
         SDL_Scancode c;
         while(SDL_PollEvent(&event)) {
@@ -68,8 +71,14 @@ main(int argc, char **argv)
         hash = hashes[hash_index];
         game->gfx.prepare();
         game->grid.foreach(
-                [&game, &hash](Cell &c) -> void {
+                [&game, &hash, &clade_frequency](Cell &c) -> void {
                     if (c.alive()) {
+                        try {
+                            clade_frequency.at(c.genome()) += 1;
+                        } catch (out_of_range) {
+                            clade_frequency[c.genome()] = 1;
+                        }
+
                         c.step();
                         uint32_t g = hash(c);
                         game->gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
@@ -80,6 +89,11 @@ main(int argc, char **argv)
         game->gfx.present();
 
         SDL_Delay(ticks);
+    }
+
+    fstream stats("stats", ios_base::out);
+    for (auto &p : clade_frequency) {
+        stats << p.first << ' ' << p.second << '\n';
     }
 
     SDL_Quit();
