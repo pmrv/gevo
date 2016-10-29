@@ -80,6 +80,11 @@ CellGrid<N>::CellGrid()
             n.push_back(ref(d_cells[r + N * j]));
             n.push_back(ref(d_cells[i + N * u]));
             n.push_back(ref(d_cells[i + N * d]));
+
+            n.push_back(ref(d_cells[l + N * u]));
+            n.push_back(ref(d_cells[r + N * u]));
+            n.push_back(ref(d_cells[l + N * d]));
+            n.push_back(ref(d_cells[r + N * d]));
             random_shuffle(n.begin(), n.end());
             d_cells[i + N * j].neighbours(n);
         }
