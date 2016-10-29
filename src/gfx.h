@@ -1,3 +1,5 @@
+// Copyright (C) 2016 Marvin Poul <ponder@creshal.de>
+
 #ifndef GFX_H
 #define GFX_H
 

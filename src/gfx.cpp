@@ -1,3 +1,5 @@
+// Copyright (C) 2016 Marvin Poul <ponder@creshal.de>
+
 #include "gfx.h"
 
 GfxState::GfxState(int n) : N(n)

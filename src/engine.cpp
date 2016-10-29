@@ -1,3 +1,4 @@
+// Copyright (C) 2016 Marvin Poul <ponder@creshal.de>
 #include "engine.h"
 
 uint8_t

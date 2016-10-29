@@ -1,3 +1,5 @@
+// Copyright (C) 2016 Marvin Poul <ponder@creshal.de>
+
 #ifndef ENGINE_H
 #define ENGINE_H
 

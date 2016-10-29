@@ -1,3 +1,5 @@
+// Copyright (C) 2016 Marvin Poul <ponder@creshal.de>
+
 #include "engine.h"
 #include "gfx.h"
 
