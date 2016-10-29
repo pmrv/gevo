@@ -10,7 +10,7 @@ using namespace std;
 template<int N>
 struct GfxGame {
     CellGrid<N> grid;
-    GfxState gfx = GfxState(N);
+    GfxState gfx = GfxState(N, 480, 480);
 };
 
 typedef uint32_t (*CellHash)(Cell &);
@@ -43,16 +43,25 @@ main(int argc, char **argv)
     });
 
     while (running) {
+        SDL_Scancode c;
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
                 case SDL_QUIT:
                     running = false;
                     break;
                 case SDL_KEYDOWN:
-                    SDL_Scancode c = event.key.keysym.scancode;
+                    c = event.key.keysym.scancode;
                     if (c < 30 || c >= 30 + hashes.size()) break;
 
                     hash_index = event.key.keysym.scancode - 30;
+                    break;
+                case SDL_WINDOWEVENT:
+                    if (event.window.event != SDL_WINDOWEVENT_RESIZED) break;
+
+                    game->gfx.X(event.window.data1);
+                    game->gfx.Y(event.window.data2);
+                    break;
+
             }
         }
 

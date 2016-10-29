@@ -17,14 +17,18 @@ class GfxState {
     private:
         SDL_Window *d_window = NULL;
         SDL_Renderer *d_renderer = NULL;
-        int N, X = 480, Y = 480, DX = X / N, DY = Y / N;
+        int N, d_X, d_Y, DX = d_X / N, DY = d_Y / N;
 
     public:
-        GfxState(int n);
+        GfxState(int n, int x, int y);
         void draw_rect(int i, int j, uint8_t r, uint8_t g, uint8_t b);
         void prepare();
         void present();
 
+        void X(int x);
+        void Y(int y);
+        int X();
+        int Y();
 };
 
 #endif
