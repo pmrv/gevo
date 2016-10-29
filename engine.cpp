@@ -58,7 +58,7 @@ Cell::step()
             if (n.alive()) continue;
 
             uint32_t g = d_genome;
-            if ((rand() & 0x1f) < mutate) {
+            if (rand() < mutate * RAND_MAX) {
                 g ^= rand() & 0xffffffff;
             }
             n.revive(g);
@@ -85,7 +85,7 @@ Cell::revive(uint32_t g)
     hunger =                   ((g & 0x0000e0) >>  5) + 2;
     horny  = static_cast<float>((g & 0x000f00) >>  8) / 32;
     aggro  = static_cast<float>((g & 0x00f000) >> 12) / 32;
-    mutate =                   ((g & 0x1f0000) >> 16);
+    mutate = static_cast<float>((g & 0x1f0000) >> 16) / 32;
 }
 
 bool
