@@ -50,7 +50,7 @@ main(int argc, char **argv)
                     break;
                 case SDL_KEYDOWN:
                     SDL_Scancode c = event.key.keysym.scancode;
-                    if (c < 30 || c > 30 + hashes.size()) break;
+                    if (c < 30 || c >= 30 + hashes.size()) break;
 
                     hash_index = event.key.keysym.scancode - 30;
             }
