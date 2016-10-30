@@ -17,8 +17,8 @@ class Cell {
         vector<reference_wrapper<Cell>> d_neighbours;
         bool d_alive = false;
         uint32_t d_genome = 0xffffffff;
-        uint8_t d_age = 0, hunger= 0, mutate;
-        float horny = 0, aggro = 0;
+        uint8_t d_age = 0, hunger= 0;
+        float horny = 0, aggro = 0, mutate = 0;
         int d_x, d_y;
 
     public:

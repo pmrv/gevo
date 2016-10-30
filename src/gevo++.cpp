@@ -72,19 +72,19 @@ main(int argc, char **argv)
         game->gfx.prepare();
         game->grid.foreach(
                 [&game, &hash, &clade_frequency](Cell &c) -> void {
-                    if (c.alive()) {
-                        try {
-                            clade_frequency.at(c.genome()) += 1;
-                        } catch (out_of_range) {
-                            clade_frequency[c.genome()] = 1;
-                        }
+                    if (!c.alive()) return;
 
-                        c.step();
-                        uint32_t g = hash(c);
-                        game->gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
-                                                          (g >>  8) & 0xff,
-                                                           g        & 0xff);
+                    try {
+                        clade_frequency.at(c.genome()) += 1;
+                    } catch (out_of_range) {
+                        clade_frequency[c.genome()] = 1;
                     }
+
+                    c.step();
+                    uint32_t g = hash(c);
+                    game->gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
+                                                      (g >>  8) & 0xff,
+                                                       g        & 0xff);
                 });
         game->gfx.present();
 
