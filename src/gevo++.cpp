@@ -45,6 +45,7 @@ main(int argc, char **argv)
     });
 
     unordered_map<uint32_t, int> clade_frequency;
+    fstream stats("stats", ios_base::out);
     while (running) {
         SDL_Scancode c;
         while(SDL_PollEvent(&event)) {
@@ -68,6 +69,7 @@ main(int argc, char **argv)
             }
         }
 
+        clade_frequency.clear();
         hash = hashes[hash_index];
         game->gfx.prepare();
         game->grid.foreach(
@@ -88,13 +90,14 @@ main(int argc, char **argv)
                 });
         game->gfx.present();
 
+        for (auto &p : clade_frequency) {
+            stats << p.first << ' ' << p.second << '\n';
+        }
+        stats << '\n';
+
         SDL_Delay(ticks);
     }
 
-    fstream stats("stats", ios_base::out);
-    for (auto &p : clade_frequency) {
-        stats << p.first << ' ' << p.second << '\n';
-    }
-
+    stats.close();
     SDL_Quit();
 }
