@@ -93,7 +93,7 @@ CellGrid<N>::CellGrid()
     }
 
     // TODO: do that reguarly during steps
-    random_shuffle(d_cells.begin(), d_cells.end());
+    //random_shuffle(d_cells.begin(), d_cells.end());
 }
 
 template<int N>
