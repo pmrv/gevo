@@ -143,3 +143,46 @@ Cell::y(int yy)
 {
     d_y = yy;
 }
+
+CellGrid::CellGrid(int N) : d_N(N)
+{
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            d_cells.push_back(Cell(i, j));
+        }
+    }
+
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+
+            int l = i - 1, r = i + 1, u = j - 1, d = j + 1;
+            if (l < 0) l += N;
+            if (u < 0) u += N;
+            if (r > N) r -= N;
+            if (d > N) d -= N;
+
+            vector<reference_wrapper<Cell>> n;
+            n.push_back(ref(d_cells[l + N * j]));
+            n.push_back(ref(d_cells[r + N * j]));
+            n.push_back(ref(d_cells[i + N * u]));
+            n.push_back(ref(d_cells[i + N * d]));
+
+            n.push_back(ref(d_cells[l + N * u]));
+            n.push_back(ref(d_cells[r + N * u]));
+            n.push_back(ref(d_cells[l + N * d]));
+            n.push_back(ref(d_cells[r + N * d]));
+            random_shuffle(n.begin(), n.end());
+            d_cells[i + N * j].neighbours(n);
+        }
+    }
+
+    // TODO: do that reguarly during steps
+    //random_shuffle(d_cells.begin(), d_cells.end());
+}
+
+void
+CellGrid::foreach(ForEachCell f)
+{
+    for_each(d_cells.begin(), d_cells.end(), f);
+}

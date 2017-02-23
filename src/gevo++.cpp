@@ -12,10 +12,13 @@ using namespace std;
 
 #define HELP_TEXT "[-f FPS|-h]"
 
-template<int N>
 struct GfxGame {
-    CellGrid<N> grid;
-    GfxState gfx = GfxState(N, 480, 480);
+    public:
+        CellGrid grid;
+        GfxState gfx;
+
+        GfxGame(int N) : grid(N)
+                       , gfx(N, 480, 480) {};
 };
 
 typedef uint32_t (*CellHash)(Cell &);
@@ -28,7 +31,7 @@ main(int argc, char **argv)
     char opt;
     const int M = 40;
     int fps = FPS;
-    GfxGame<M> *game = new GfxGame<M>();
+    GfxGame game = GfxGame(M);
 
     while ((opt = getopt(argc, argv, "+hf:")) != -1) {
         switch (opt) {
@@ -62,7 +65,7 @@ main(int argc, char **argv)
     hashes.push_back([](Cell &c) -> uint32_t {return c.genome();});
     hashes.push_back([](Cell &c) -> uint32_t {return c.age();});
 
-    game->grid.foreach(
+    game.grid.foreach(
             [&clades](Cell &c) -> void {
                 int x = c.x(), y = c.y();
                 if ((x + y) % 3 == 0) c.revive(clades[(x + y) % 10]);
@@ -86,8 +89,8 @@ main(int argc, char **argv)
                 case SDL_WINDOWEVENT:
                     if (event.window.event != SDL_WINDOWEVENT_RESIZED) break;
 
-                    game->gfx.X(event.window.data1);
-                    game->gfx.Y(event.window.data2);
+                    game.gfx.X(event.window.data1);
+                    game.gfx.Y(event.window.data2);
                     break;
 
             }
@@ -95,8 +98,8 @@ main(int argc, char **argv)
 
         clade_frequency.clear();
         hash = hashes[hash_index];
-        game->gfx.prepare();
-        game->grid.foreach(
+        game.gfx.prepare();
+        game.grid.foreach(
                 [&game, &hash, &clade_frequency](Cell &c) -> void {
                     if (!c.alive()) return;
 
@@ -108,11 +111,11 @@ main(int argc, char **argv)
 
                     c.step();
                     uint32_t g = hash(c);
-                    game->gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
-                                                      (g >>  8) & 0xff,
-                                                       g        & 0xff);
+                    game.gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
+                                                     (g >>  8) & 0xff,
+                                                      g        & 0xff);
                 });
-        game->gfx.present();
+        game.gfx.present();
 
         for (auto &p : clade_frequency) {
             stats << p.first << ' ' << p.second << '\n';
