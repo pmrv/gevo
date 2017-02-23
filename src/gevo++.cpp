@@ -3,11 +3,14 @@
 #include "engine.h"
 #include "gfx.h"
 
+#include <getopt.h>
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
 
 using namespace std;
+
+#define HELP_TEXT "[-f FPS|-h]"
 
 template<int N>
 struct GfxGame {
@@ -22,15 +25,25 @@ typedef uint32_t (*CellHash)(Cell &);
 int
 main(int argc, char **argv)
 {
+    char opt;
     const int M = 40;
     int fps = FPS;
     GfxGame<M> *game = new GfxGame<M>();
 
-    if (argc >= 2) {
-        fps = atoi(argv[1]);
-        if (fps == 0) {
-            cerr << "couldn't parse fps arg\n";
-            exit(1);
+    while ((opt = getopt(argc, argv, "+hf:")) != -1) {
+        switch (opt) {
+            case 'h':
+            case '?':
+                cerr << argv[0] << ' ' << HELP_TEXT << '\n';
+                exit(0);
+
+            case 'f':
+                fps = atoi(optarg);
+                if (fps == 0) {
+                    cerr << "couldn't parse fps arg\n";
+                    exit(1);
+                }
+                break;
         }
     }
 
