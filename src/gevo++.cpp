@@ -17,15 +17,26 @@ struct GfxGame {
 
 typedef uint32_t (*CellHash)(Cell &);
 
+#define FPS 60
+
 int
 main(int argc, char **argv)
 {
     const int M = 40;
+    int fps = FPS;
     GfxGame<M> *game = new GfxGame<M>();
+
+    if (argc >= 2) {
+        fps = atoi(argv[1]);
+        if (fps == 0) {
+            cerr << "couldn't parse fps arg\n";
+            exit(1);
+        }
+    }
 
     bool running = true;
     SDL_Event event;
-    unsigned int ticks = 1000 / 60;
+    unsigned int ticks = 1000 / fps;
 
     vector<uint32_t> clades;
     for (int i = 0; i < 10; i++) {
