@@ -5,9 +5,14 @@ HEADERS=$(wildcard src/*.h)
 SOURCES=$(wildcard src/*.cpp)
 OBJECTS=$(patsubst %.cpp,%.o,$(SOURCES))
 
-TARGET = bin/gevo++
+BUILDDIR=bin/
 
-all: $(TARGET)
+TARGET = $(BUILDDIR)/gevo++
+
+all: dirs $(TARGET)
+
+dirs:
+	mkdir -p $(BUILDDIR)
 
 $(OBJECTS): $(SOURCES) $(HEADERS)
 
