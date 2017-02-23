@@ -68,7 +68,7 @@ Cell::step()
     } else
     if (rand() < aggro * RAND_MAX) {
         for (Cell &n : d_neighbours) {
-            if (!n.alive()) continue;
+            if (!n.alive() || like(n)) continue;
 
             n.attacked(aggro * d_age);
             break;
