@@ -7,19 +7,11 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
+#include <thread>
 
 using namespace std;
 
 #define HELP_TEXT "[-f FPS|-h]"
-
-struct GfxGame {
-    public:
-        CellGrid grid;
-        GfxState gfx;
-
-        GfxGame(int N) : grid(N)
-                       , gfx(N, 480, 480) {};
-};
 
 typedef uint32_t (*CellHash)(Cell &);
 
@@ -31,7 +23,11 @@ main(int argc, char **argv)
     char opt;
     const int M = 40;
     int fps = FPS;
-    GfxGame game = GfxGame(M);
+    fstream stats("stats", ios_base::out);
+
+    GfxState gfx(M, 480, 480);
+    CellGrid current_grid(M);
+    CellGrid display_grid;
 
     while ((opt = getopt(argc, argv, "+hf:")) != -1) {
         switch (opt) {
@@ -52,27 +48,55 @@ main(int argc, char **argv)
 
     bool running = true;
     SDL_Event event;
-    unsigned int ticks = 1000 / fps;
 
     vector<uint32_t> clades;
     for (int i = 0; i < 10; i++) {
         clades.push_back(static_cast<uint32_t>(rand()));
     }
 
-    CellHash hash = NULL;
     size_t hash_index = 0;
     vector<CellHash> hashes;
     hashes.push_back([](Cell &c) -> uint32_t {return c.genome();});
     hashes.push_back([](Cell &c) -> uint32_t {return c.age();});
+    CellHash hash = hashes[0];
 
-    game.grid.foreach(
+    current_grid.foreach(
             [&clades](Cell &c) -> void {
                 int x = c.x(), y = c.y();
                 if ((x + y) % 3 == 0) c.revive(clades[(x + y) % 10]);
     });
 
-    unordered_map<uint32_t, int> clade_frequency;
-    fstream stats("stats", ios_base::out);
+    thread stepThread([&current_grid, &running]() -> void {
+            while (running) {
+                current_grid.foreach([](Cell &c) -> void {
+                    if (!c.alive()) return;
+
+                    c.step();
+                });
+            }
+    });
+
+    thread gfxThread([&current_grid, &hash, &gfx, &running](int fps) -> void {
+            unsigned int ticks = 1000 / fps;
+            while (running) {
+                CellGrid grid = current_grid;
+
+                gfx.prepare();
+                grid.foreach(
+                        [&hash, &gfx](Cell &c) -> void {
+                            if (!c.alive()) return;
+
+                            uint32_t g = hash(c);
+                            gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
+                                                        (g >>  8) & 0xff,
+                                                         g        & 0xff);
+                        });
+                gfx.present();
+                SDL_Delay(ticks);
+            }
+    }, fps);
+
+    //unordered_map<uint32_t, int> clade_frequency;
     while (running) {
         SDL_Scancode c;
         while(SDL_PollEvent(&event)) {
@@ -85,22 +109,22 @@ main(int argc, char **argv)
                     if (c < 30 || c >= 30 + hashes.size()) break;
 
                     hash_index = event.key.keysym.scancode - 30;
+                    hash = hashes[hash_index];
                     break;
                 case SDL_WINDOWEVENT:
                     if (event.window.event != SDL_WINDOWEVENT_RESIZED) break;
 
-                    game.gfx.X(event.window.data1);
-                    game.gfx.Y(event.window.data2);
+                    gfx.X(event.window.data1);
+                    gfx.Y(event.window.data2);
                     break;
 
             }
         }
 
-        clade_frequency.clear();
-        hash = hashes[hash_index];
-        game.gfx.prepare();
-        game.grid.foreach(
-                [&game, &hash, &clade_frequency](Cell &c) -> void {
+        //clade_frequency.clear();
+        /*
+        current_grid.foreach(
+                [&gfx, &hash, &clade_frequency](Cell &c) -> void {
                     if (!c.alive()) return;
 
                     try {
@@ -108,22 +132,21 @@ main(int argc, char **argv)
                     } catch (out_of_range) {
                         clade_frequency[c.genome()] = 1;
                     }
-
-                    c.step();
-                    uint32_t g = hash(c);
-                    game.gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
-                                                     (g >>  8) & 0xff,
-                                                      g        & 0xff);
                 });
-        game.gfx.present();
+        */
 
+
+        /*
         for (auto &p : clade_frequency) {
             stats << p.first << ' ' << p.second << '\n';
         }
         stats << '\n';
+        */
 
-        SDL_Delay(ticks);
     }
+
+    stepThread.join();
+    gfxThread.join();
 
     stats.close();
     SDL_Quit();

@@ -53,6 +53,7 @@ class CellGrid {
         vector<Cell> d_cells;
 
     public:
+        CellGrid() {};
         CellGrid(int N);
         void foreach(ForEachCell f);
 

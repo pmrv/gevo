@@ -1,5 +1,5 @@
 CPPFLAGS= -Wall -Werror -g `sdl2-config --cflags` -Og
-LDLIBS=`sdl2-config --libs` -lstdc++
+LDLIBS=`sdl2-config --libs` -lstdc++ -pthread
 
 HEADERS=$(wildcard src/*.h)
 SOURCES=$(wildcard src/*.cpp)
