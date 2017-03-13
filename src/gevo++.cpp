@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define HELP_TEXT "[-f FPS|-h]"
+#define HELP_TEXT "[-f FPS|-h|-o FILE]"
 
 struct GfxGame {
     public:
@@ -31,9 +31,9 @@ main(int argc, char **argv)
     char opt;
     const int M = 40;
     int fps = FPS;
-    GfxGame game = GfxGame(M);
+    string output_file = "stats";
 
-    while ((opt = getopt(argc, argv, "+hf:")) != -1) {
+    while ((opt = getopt(argc, argv, "+hf:o:")) != -1) {
         switch (opt) {
             case 'h':
             case '?':
@@ -47,9 +47,13 @@ main(int argc, char **argv)
                     exit(1);
                 }
                 break;
+            case 'o':
+                output_file = optarg;
+                break;
         }
     }
 
+    GfxGame game = GfxGame(M);
     bool running = true;
     SDL_Event event;
     unsigned int ticks = 1000 / fps;
@@ -72,7 +76,7 @@ main(int argc, char **argv)
     });
 
     unordered_map<uint32_t, int> clade_frequency;
-    fstream stats("stats", ios_base::out);
+    fstream stats(output_file, ios_base::out);
     while (running) {
         SDL_Scancode c;
         while(SDL_PollEvent(&event)) {
