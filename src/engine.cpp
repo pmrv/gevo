@@ -17,11 +17,11 @@ Cell::Cell()
 {
 }
 
-Cell::Cell(int x, int y) : d_x(x), d_y(y)
+Cell::Cell(CellGrid* grid, int x, int y) : d_grid(grid), d_x(x), d_y(y)
 {
 }
 
-Cell::Cell(int x, int y, uint32_t g) : Cell(x, y)
+Cell::Cell(CellGrid* grid, int x, int y, uint32_t g) : Cell(grid, x, y)
 {
     revive(g);
 }
@@ -62,7 +62,7 @@ Cell::step()
             if (rand() < mutate * RAND_MAX) {
                 g ^= rand() & 0xffffffff;
             }
-            n.revive(g);
+            d_grid->request_revive(n, g);
             break;
         }
     } else
@@ -148,7 +148,7 @@ CellGrid::CellGrid(int N) : d_N(N)
 {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
-            d_cells.push_back(Cell(i, j));
+            d_cells.push_back(Cell(this, i, j));
         }
     }
 
@@ -173,6 +173,7 @@ CellGrid::CellGrid(int N) : d_N(N)
             n.push_back(ref(d_cells[l + N * d]));
             n.push_back(ref(d_cells[r + N * d]));
             random_shuffle(n.begin(), n.end());
+
             d_cells[i + N * j].neighbours(n);
         }
     }
@@ -185,4 +186,19 @@ void
 CellGrid::foreach(ForEachCell f)
 {
     for_each(d_cells.begin(), d_cells.end(), f);
+}
+
+void
+CellGrid::request_revive(Cell& target, uint32_t genome)
+{
+    d_revive_queue.push_back({ref(target), genome});
+}
+
+void
+CellGrid::process_revives()
+{
+    for (auto req : d_revive_queue) {
+        static_cast<Cell&>(req.target).revive(req.genome);
+    }
+    d_revive_queue.clear();
 }

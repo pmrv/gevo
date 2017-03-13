@@ -12,8 +12,11 @@
 
 using namespace std;
 
+class CellGrid;
+
 class Cell {
     private:
+        CellGrid* d_grid = nullptr;
         vector<reference_wrapper<Cell>> d_neighbours;
         bool d_alive = false;
         uint32_t d_genome = 0xffffffff;
@@ -23,8 +26,8 @@ class Cell {
 
     public:
         Cell();
-        Cell(int x, int y);
-        Cell(int x, int y, uint32_t g);
+        Cell(CellGrid* grid, int x, int y);
+        Cell(CellGrid* grid, int x, int y, uint32_t g);
 
         void revive(uint32_t g);
         void die();
@@ -47,14 +50,22 @@ class Cell {
 //typedef void (*ForEachCell)(Cell&, void *);
 typedef std::function<void(Cell&)> ForEachCell;
 
+struct ReviveRequest {
+    reference_wrapper<Cell> target;
+    uint32_t genome;
+};
+
 class CellGrid {
     private:
         int d_N;
         vector<Cell> d_cells;
+        vector<ReviveRequest> d_revive_queue;
 
     public:
         CellGrid(int N);
         void foreach(ForEachCell f);
+        void request_revive(Cell& target, uint32_t genome);
+        void process_revives();
 
 };
 

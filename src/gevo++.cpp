@@ -115,6 +115,7 @@ main(int argc, char **argv)
                                                      (g >>  8) & 0xff,
                                                       g        & 0xff);
                 });
+        game.grid.process_revives();
         game.gfx.present();
 
         for (auto &p : clade_frequency) {
