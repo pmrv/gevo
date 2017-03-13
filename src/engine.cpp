@@ -64,7 +64,8 @@ Cell::step()
             if (rand() < mutate * RAND_MAX) {
                 g ^= rand() & 0xffffffff;
             }
-            d_grid->request_revive(n, g);
+            d_grid->request_revive(n, g, *this);
+
             break;
         }
     } else
@@ -72,7 +73,14 @@ Cell::step()
         for (Cell &n : d_neighbours) {
             if (!n.alive() || like(n)) continue;
 
-            n.attacked(aggro * d_age);
+            float ma = attack(),
+                  na = n.attack();
+            if (ma > na) {
+                d_grid->request_death(n, *this);
+            } else if (ma < na) {
+                d_grid->request_death(*this, n);
+            }
+
             break;
         }
     }
@@ -97,13 +105,6 @@ Cell::like(Cell &c)
     return bitcount(~(d_genome ^ c.genome())) < mutate;
 }
 
-void
-Cell::attacked(float a)
-{
-    float o = d_age * aggro;
-    d_age -= o < a ? a : 0;
-}
-
 bool
 Cell::alive()
 {
@@ -120,6 +121,12 @@ uint8_t
 Cell::age()
 {
     return d_age;
+}
+
+float
+Cell::attack()
+{
+    return d_age * aggro;
 }
 
 int
@@ -179,7 +186,7 @@ CellGrid::CellGrid(int N) : d_N(N)
         }
     }
 
-    // TODO: do that reguarly during steps
+    // TODO: do that regularly during steps
     //random_shuffle(d_cells.begin(), d_cells.end());
 }
 
@@ -190,16 +197,27 @@ CellGrid::foreach(ForEachCell f)
 }
 
 void
-CellGrid::request_revive(Cell& target, uint32_t genome)
+CellGrid::request_revive(Cell& target, uint32_t genome, Cell& mother)
 {
-    d_revive_queue.push_back({ref(target), genome});
+    d_revive_queue.push_back({ref(target), genome, ref(mother)});
 }
 
 void
-CellGrid::process_revives()
+CellGrid::request_death(Cell& target, Cell& killer)
+{
+    d_death_queue.push_back({ref(target), ref(killer)});
+}
+
+void
+CellGrid::process_requests()
 {
     for (auto req : d_revive_queue) {
         static_cast<Cell&>(req.target).revive(req.genome);
     }
     d_revive_queue.clear();
+
+    for (auto req : d_death_queue) {
+        static_cast<Cell&>(req.target).die();
+    }
+    d_death_queue.clear();
 }

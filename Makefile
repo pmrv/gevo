@@ -1,4 +1,4 @@
-CPPFLAGS= -Wall -Werror -g `sdl2-config --cflags` -Og
+CPPFLAGS= -Wall -Werror -g `sdl2-config --cflags` -Og -pthread
 LDLIBS=`sdl2-config --libs` -lstdc++
 
 HEADERS=$(wildcard src/*.h)

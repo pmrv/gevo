@@ -33,7 +33,6 @@ class Cell {
         void die();
         void step();
         bool like(Cell &c);
-        void attacked(float a);
 
         void neighbours(vector<reference_wrapper<Cell>> n);
         vector<reference_wrapper<Cell>> neighbours();
@@ -41,18 +40,24 @@ class Cell {
         uint32_t genome();
         bool alive();
         uint8_t age();
+        float attack();
+
         int x();
         void x(int xx);
         int y();
         void y(int yy);
 };
 
-//typedef void (*ForEachCell)(Cell&, void *);
 typedef std::function<void(Cell&)> ForEachCell;
 
 struct ReviveRequest {
     reference_wrapper<Cell> target;
     uint32_t genome;
+    reference_wrapper<Cell> mother;
+};
+
+struct DeathRequest {
+    reference_wrapper<Cell> target, killer;
 };
 
 class CellGrid {
@@ -60,13 +65,14 @@ class CellGrid {
         int d_N;
         vector<Cell> d_cells;
         vector<ReviveRequest> d_revive_queue;
+        vector<DeathRequest> d_death_queue;
 
     public:
         CellGrid(int N);
         void foreach(ForEachCell f);
-        void request_revive(Cell& target, uint32_t genome);
-        void process_revives();
-
+        void request_revive(Cell& target, uint32_t genome, Cell& mother);
+        void request_death(Cell& target, Cell& killer);
+        void process_requests();
 };
 
 #endif
