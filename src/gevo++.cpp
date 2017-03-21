@@ -58,14 +58,18 @@ main(int argc, char **argv)
     GfxGame game = GfxGame(M);
 
     vector<uint32_t> clades;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < game.gfx.X() / 3; i++) {
         clades.push_back(static_cast<uint32_t>(rand()));
     }
 
     size_t hash_index = 0;
-    vector<CellHash> hashes;
-    hashes.push_back([](Cell &c) -> uint32_t {return c.genome();});
-    hashes.push_back([](Cell &c) -> uint32_t {return c.age();});
+    vector<CellHash> hashes = {
+        [](Cell &c) -> uint32_t {return c.genome();},
+        [](Cell &c) -> uint32_t {return c.age();},
+        [](Cell &c) -> uint32_t {return (uint8_t) (128 * c.horny)  << 16;},
+        [](Cell &c) -> uint32_t {return (uint8_t) (128 * c.aggro)  << 16;},
+        [](Cell &c) -> uint32_t {return (uint8_t) (256 * c.mutate) <<  8;}
+    };
     CellHash hash = hashes[0];
 
     game.grid.on_live_cells(
