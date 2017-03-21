@@ -184,8 +184,6 @@ CellGrid::CellGrid(int N) : d_N(N)
             d_cells[i + N * j].neighbours(n);
         }
     }
-
-    // TODO: do that regularly during steps
 }
 
 void
@@ -193,7 +191,6 @@ CellGrid::on_live_cells(ForEachCell f)
 {
     d_populus.clear();
 
-    random_shuffle(d_cells.begin(), d_cells.end());
     for_each(d_cells.begin(), d_cells.end(), [&f, this](Cell& c) -> void {
             c.step();
 
