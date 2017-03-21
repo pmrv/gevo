@@ -6,7 +6,6 @@
 #include <getopt.h>
 #include <fstream>
 #include <iostream>
-#include <unordered_map>
 #include <thread>
 
 using namespace std;
@@ -69,46 +68,41 @@ main(int argc, char **argv)
     hashes.push_back([](Cell &c) -> uint32_t {return c.age();});
     CellHash hash = hashes[0];
 
-    game.grid.foreach(
+    game.grid.on_live_cells(
             [&clades](Cell &c) -> void {
                 int x = c.x(), y = c.y();
                 if ((x + y) % 3 == 0) c.revive(clades[(x + y) % 10]);
-    });
+            }
+    );
 
     thread sdlThread(
             [&game, &output_file, &hash, &running, &fps]() -> void {
                 unsigned int ticks = 1000 / fps;
 
-                unordered_map<uint32_t, int> clade_frequency;
-                fstream stats(output_file, ios_base::out);
+                fstream fstats(output_file, ios_base::out);
 
                 while (running) {
-                    clade_frequency.clear();
                     game.gfx.prepare();
-                    game.grid.foreach(
-                            [&game, &hash, &clade_frequency](Cell &c) -> void {
+                    game.grid.on_live_cells(
+                            [&game, &hash](Cell &c) -> void {
                                 if (!c.alive()) return;
 
-                                try {
-                                    clade_frequency.at(c.genome()) += 1;
-                                } catch (out_of_range) {
-                                    clade_frequency[c.genome()] = 1;
-                                }
-
-                                c.step();
                                 uint32_t g = hash(c);
                                 game.gfx.draw_rect(c.x(), c.y(), (g >> 16) & 0xff,
                                                                  (g >>  8) & 0xff,
                                                                   g        & 0xff);
                             }
                     );
-                    game.grid.process_requests();
                     game.gfx.present();
 
-                    for (auto &p : clade_frequency) {
-                        stats << p.first << ' ' << p.second << '\n';
-                    }
-                    stats << '\n';
+                    game.grid.on_step_stats(
+                            [&fstats](StepStats stats) -> void {
+                                for (auto &p : stats.populus) {
+                                    fstats << p.first << ' ' << p.second << '\n';
+                                }
+                                fstats << '\n';
+                            }
+                    );
 
                     SDL_Delay(ticks);
                 }

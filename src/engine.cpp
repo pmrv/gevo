@@ -161,7 +161,6 @@ CellGrid::CellGrid(int N) : d_N(N)
         }
     }
 
-
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
 
@@ -191,9 +190,31 @@ CellGrid::CellGrid(int N) : d_N(N)
 }
 
 void
-CellGrid::foreach(ForEachCell f)
+CellGrid::on_live_cells(ForEachCell f)
 {
-    for_each(d_cells.begin(), d_cells.end(), f);
+    d_populus.clear();
+
+    for_each(d_cells.begin(), d_cells.end(), [&f, this](Cell& c) -> void {
+            c.step();
+
+            try {
+                d_populus.at(c.genome()) += 1;
+            } catch (out_of_range) {
+                d_populus[c.genome()] = 1;
+            }
+
+            f(c);
+        }
+    );
+
+    process_requests();
+}
+
+void
+CellGrid::on_step_stats(OnStepStats f)
+{
+    StepStats stats = {d_populus};
+    f(stats);
 }
 
 void
