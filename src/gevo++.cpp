@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define HELP_TEXT "[-f FPS|-h|-o FILE]"
+#define HELP_TEXT "[-h | -f FPS | -o FILE | -m MULTIPLIER]"
 
 struct GfxGame {
     public:
@@ -31,9 +31,10 @@ main(int argc, char **argv)
     char opt;
     const int M = 40;
     int fps = FPS;
+    int mult = 0;
     string output_file = "stats";
 
-    while ((opt = getopt(argc, argv, "+hf:o:")) != -1) {
+    while ((opt = getopt(argc, argv, "+hf:o:m:")) != -1) {
         switch (opt) {
             case 'h':
             case '?':
@@ -47,8 +48,20 @@ main(int argc, char **argv)
                     exit(1);
                 }
                 break;
+
             case 'o':
                 output_file = optarg;
+                break;
+
+            case 'm':
+                mult = atoi(optarg);
+                if (mult == 0) {
+                    cerr << "couldn't parse mult arg\n";
+                    exit(1);
+                }
+                // cells steps are run at least once during the sdl pass, so we
+                // need to subtract that here
+                mult -= 1;
                 break;
         }
     }
@@ -80,12 +93,16 @@ main(int argc, char **argv)
     );
 
     thread sdlThread(
-            [&game, &output_file, &hash, &running, &fps]() -> void {
+            [&game, &output_file, &hash, &running, &fps, &mult]() -> void {
                 unsigned int ticks = 1000 / fps;
 
                 fstream fstats(output_file, ios_base::out);
 
                 while (running) {
+                    for (int i = 0; i < mult; i++) {
+                        game.grid.on_live_cells([](Cell &c) -> void {});
+                    }
+
                     game.gfx.prepare();
                     game.grid.on_live_cells(
                             [&game, &hash](Cell &c) -> void {
