@@ -56,8 +56,25 @@ Cell::step()
         d_age -= 1;
     }
 
+    float mean_hunger = hunger;
+    uint8_t num_neighbours = 1;
+    for (Cell& n : d_neighbours) {
+        if (!n.alive()) continue;
+
+        num_neighbours += 1;
+        mean_hunger += n.hunger;
+    }
+    mean_hunger /= num_neighbours;
+
+    // $hunger is the number of cells that can simultaneously survive in a 9
+    // cell block
+    if (mean_hunger > num_neighbours && mean_hunger > hunger) {
+        // not enough food and we eat more then the mean, so we die
+        d_grid->request_death(*this, *this);
+    }
+
     if (rand() < horny * RAND_MAX) {
-        for (Cell &n : d_neighbours) {
+        for (Cell& n : d_neighbours) {
             if (n.alive()) continue;
 
             uint32_t g = d_genome;
@@ -70,7 +87,7 @@ Cell::step()
         }
     } else
     if (rand() < aggro * RAND_MAX) {
-        for (Cell &n : d_neighbours) {
+        for (Cell& n : d_neighbours) {
             if (!n.alive() || like(n)) continue;
 
             float ma = attack(),
@@ -189,20 +206,25 @@ CellGrid::CellGrid(int N) : d_N(N)
 void
 CellGrid::on_live_cells(ForEachCell f)
 {
+    vector<reference_wrapper<Cell>> step_cells;
+    for (Cell& c : d_cells) {
+        step_cells.push_back(ref(c));
+    }
+    random_shuffle(step_cells.begin(), step_cells.end());
+
     d_populus.clear();
 
-    for_each(d_cells.begin(), d_cells.end(), [&f, this](Cell& c) -> void {
-            c.step();
+    for (Cell& c : step_cells) {
+        c.step();
 
-            try {
-                d_populus.at(c.genome()) += 1;
-            } catch (out_of_range) {
-                d_populus[c.genome()] = 1;
-            }
-
-            f(c);
+        try {
+            d_populus.at(c.genome()) += 1;
+        } catch (out_of_range) {
+            d_populus[c.genome()] = 1;
         }
-    );
+
+        f(c);
+    }
 
     process_requests();
 }

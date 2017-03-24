@@ -77,11 +77,12 @@ main(int argc, char **argv)
 
     size_t hash_index = 0;
     vector<CellHash> hashes = {
-        [](Cell &c) -> uint32_t {return c.genome();},
-        [](Cell &c) -> uint32_t {return c.age();},
-        [](Cell &c) -> uint32_t {return (uint8_t) (128 * c.horny)  << 16;},
-        [](Cell &c) -> uint32_t {return (uint8_t) (128 * c.aggro)  << 16;},
-        [](Cell &c) -> uint32_t {return (uint8_t) (256 * c.mutate) <<  8;}
+        [](Cell& c) -> uint32_t {return c.genome();},
+        [](Cell& c) -> uint32_t {return c.age();},
+        [](Cell& c) -> uint32_t {return (uint8_t) (256 * c.mutate) <<  8;},
+        [](Cell& c) -> uint32_t {return (uint8_t) (512 * c.horny)  << 16;},
+        [](Cell& c) -> uint32_t {return (uint8_t) (512 * c.aggro)  <<  0;},
+        [](Cell& c) -> uint32_t {return (uint8_t) ( 32 * c.hunger) <<  8;},
     };
     CellHash hash = hashes[0];
 
