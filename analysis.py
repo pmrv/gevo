@@ -4,18 +4,20 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 get_trait = {
-    "age":    lambda g:  (g & 0x00001f) <<  3,
-    "hunger": lambda g: ((g & 0x0000e0) >>  5) + 2,
-    "horny":  lambda g: ((g & 0x000f00) >>  8) / 32,
-    "aggro":  lambda g: ((g & 0x00f000) >> 12) / 32,
-    "mutate": lambda g: ((g & 0x1f0000) >> 16) / 32,
+    "age":    lambda g:  (g & 0x0000001f) <<  3,
+    "hunger": lambda g: ((g & 0x000000e0) >>  5) + 2,
+    "horny":  lambda g: ((g & 0x00000f00) >>  8) / 32,
+    "aggro":  lambda g: ((g & 0x0000f000) >> 12) / 32,
+    "mutate": lambda g: ((g & 0x001f0000) >> 16) / 32,
+    "extron": lambda g: ((g & 0xff000000) >> 24),
 }
 
 def timeseries(s, g):
     return array([di.get(g, 0) for di in s])
 
 def mean(s):
-    return [sum(v * p for v, p in step.items()) for step in s]
+    return array([sum(v * p for v, p in step.items())
+                            for step in s])
 
 def trait_distribution(s, t):
     series = []

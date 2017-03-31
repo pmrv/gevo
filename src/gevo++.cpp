@@ -83,6 +83,7 @@ main(int argc, char **argv)
         [](Cell& c) -> uint32_t {return (uint8_t) (512 * c.horny)  << 16;},
         [](Cell& c) -> uint32_t {return (uint8_t) (512 * c.aggro)  <<  0;},
         [](Cell& c) -> uint32_t {return (uint8_t) ( 32 * c.hunger) <<  8;},
+        [](Cell& c) -> uint32_t {return c.genome() >>  24;},
     };
     CellHash hash = hashes[0];
 
