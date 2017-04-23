@@ -1,5 +1,5 @@
-CPPFLAGS= -Wall -Werror -g `sdl2-config --cflags` -Og -pthread
-LDLIBS=`sdl2-config --libs` -lstdc++
+CPPFLAGS= -Wall -Werror -g `sdl2-config --cflags` -std=c++14 -O0 -pthread
+LDLIBS=`sdl2-config --libs`
 
 HEADERS=$(wildcard src/*.h)
 SOURCES=$(wildcard src/*.cpp)
@@ -17,7 +17,7 @@ dirs:
 $(OBJECTS): $(SOURCES) $(HEADERS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CPPFLAGS) -o $(TARGET) $(OBJECTS) $(LDLIBS)
+	$(CXX) $(CPPFLAGS) -o $(TARGET) $(OBJECTS) $(LDLIBS)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
