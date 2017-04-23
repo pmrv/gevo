@@ -50,7 +50,7 @@ Cell::step()
     random_shuffle(d_neighbours.begin(), d_neighbours.end());
 
     if (d_age <= 0) {
-        die();
+        d_grid->request_death(*this, *this);
         return;
     } else {
         d_age -= 1;
@@ -71,20 +71,41 @@ Cell::step()
     if (mean_hunger > num_neighbours && mean_hunger > hunger) {
         // not enough food and we eat more then the mean, so we die
         d_grid->request_death(*this, *this);
+
+        return;
     }
 
     if (rand() < horny * RAND_MAX) {
+        // try to find a free spot to put our offspring into
         for (Cell& n : d_neighbours) {
             if (n.alive()) continue;
 
-            uint32_t g = d_genome;
+            Genome g = d_genome;
+
+            // if no suitable mate is there, just clone ourselves
+            Cell& mate = *this;
+            // but try to find a mate first
+            for (Cell& n : d_neighbours) {
+                if (!like(n)) continue;
+
+                mate = n;
+            }
+
+            // share every other bit
+            if (&mate != this) {
+                g = (d_genome   & 0x55555555)
+                  | (n.genome() & 0xaaaaaaaa);
+            }
+
             if (rand() < mutate * RAND_MAX) {
                 g ^= rand() & 0xffffffff;
             }
+
             d_grid->request_revive(n, g, *this);
 
-            break;
+            return;
         }
+
     } else
     if (rand() < aggro * RAND_MAX) {
         for (Cell& n : d_neighbours) {
@@ -98,7 +119,7 @@ Cell::step()
                 d_grid->request_death(*this, n);
             }
 
-            break;
+            return;
         }
     }
 }
@@ -201,6 +222,12 @@ CellGrid::CellGrid(int N) : d_N(N)
             d_cells[i + N * j].neighbours(n);
         }
     }
+}
+
+int
+CellGrid::N()
+{
+    return d_N;
 }
 
 void

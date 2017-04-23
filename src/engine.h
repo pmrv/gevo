@@ -59,7 +59,7 @@ struct StepStats {
 
 struct ReviveRequest {
     reference_wrapper<Cell> target;
-    uint32_t genome;
+    Genome genome;
     reference_wrapper<Cell> mother;
 };
 
@@ -80,6 +80,7 @@ class CellGrid {
 
     public:
         CellGrid(int N);
+        int N();
         void on_live_cells(ForEachCell f);
         void on_step_stats(OnStepStats f);
         void request_revive(Cell& target, uint32_t genome, Cell& mother);
