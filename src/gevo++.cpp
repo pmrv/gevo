@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "gfx.h"
 
+#include <time.h>
 #include <getopt.h>
 #include <fstream>
 #include <iostream>
@@ -33,6 +34,8 @@ main(int argc, char **argv)
     int fps = FPS;
     int mult = 0;
     string output_file = "stats";
+
+    srand((unsigned int) time(NULL));
 
     while ((opt = getopt(argc, argv, "+hf:o:m:")) != -1) {
         switch (opt) {
